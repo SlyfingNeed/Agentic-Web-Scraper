@@ -25,7 +25,7 @@ class ScrapingAgent:
         genai.configure(api_key=self.gemini_api_key)
         
         # Initialize Gemini model
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
         
         # Predefined website mappings for common queries
         self.website_mappings = {

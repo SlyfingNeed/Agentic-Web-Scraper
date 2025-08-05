@@ -3,6 +3,7 @@ from playwright.async_api import async_playwright, Browser, Page
 from typing import Optional
 import logging
 import time
+import httpx
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +26,7 @@ class BrowserManager:
         try:
             self.playwright = await async_playwright().start()
             
-            # Launch browser with appropriate settings for scraping
+            # Launch browser with more permissive settings
             self.browser = await self.playwright.chromium.launch(
                 headless=True,  # Run in headless mode for server deployment
                 args=[
@@ -41,7 +42,9 @@ class BrowserManager:
                     '--disable-renderer-backgrounding',
                     '--disable-features=TranslateUI',
                     '--disable-ipc-flooding-protection',
-                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    '--disable-web-security',  # Add this
+                    '--disable-features=VizDisplayCompositor',  # Add this
+                    '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'  # Updated user agent
                 ]
             )
             
@@ -51,11 +54,11 @@ class BrowserManager:
             # Set viewport
             await self.page.set_viewport_size({"width": 1920, "height": 1080})
             
-            # Set default timeout
-            self.page.set_default_timeout(30000)  # 30 seconds
+            # Increase timeout significantly
+            self.page.set_default_timeout(60000)  # 60 seconds
             
-            # Add request interception to block unnecessary resources
-            await self.page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ttf,otf}", self._block_resource)
+            # Remove the resource blocking for now
+            # await self.page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2,ttf,otf}", self._block_resource)
             
             self.is_initialized = True
             logger.info("Browser initialized successfully")
@@ -92,13 +95,6 @@ class BrowserManager:
     async def get_page_content(self, url: str, wait_time: int = 3) -> Optional[str]:
         """
         Navigate to URL, wait for page to load, and return HTML content
-        
-        Args:
-            url: The URL to navigate to
-            wait_time: Time to wait after page load for dynamic content (seconds)
-        
-        Returns:
-            HTML content as string or None if failed
         """
         if not self.is_ready():
             logger.error("Browser not ready")
@@ -107,22 +103,26 @@ class BrowserManager:
         try:
             logger.info(f"Navigating to: {url}")
             
-            # Navigate to the page
-            response = await self.page.goto(url, wait_until="networkidle")
+            # Try with networkidle first, fallback to domcontentloaded
+            try:
+                response = await self.page.goto(url, wait_until="networkidle", timeout=60000)
+            except Exception as e:
+                logger.warning(f"Network idle timeout, trying with domcontentloaded: {e}")
+                response = await self.page.goto(url, wait_until="domcontentloaded", timeout=60000)
             
             if not response or response.status >= 400:
                 logger.error(f"Failed to load page: {response.status if response else 'No response'}")
                 return None
             
             # Wait for page to fully load
-            await self.page.wait_for_load_state("networkidle")
+            try:
+                await self.page.wait_for_load_state("networkidle", timeout=30000)
+            except:
+                await self.page.wait_for_load_state("domcontentloaded", timeout=30000)
             
             # Additional wait for dynamic content
             if wait_time > 0:
                 await asyncio.sleep(wait_time)
-            
-            # Scroll to load lazy-loaded content
-            await self._scroll_page()
             
             # Get the final HTML content
             html_content = await self.page.content()
@@ -219,4 +219,21 @@ class BrowserManager:
             
         except Exception as e:
             logger.error(f"Error getting page info: {e}")
+            return None 
+
+    async def get_page_content_simple(self, url: str) -> Optional[str]:
+        """Fallback method using httpx for simple pages"""
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
+                response = await client.get(url, headers=headers)
+                if response.status_code == 200:
+                    return response.text
+                else:
+                    logger.error(f"HTTP request failed: {response.status_code}")
+                    return None
+        except Exception as e:
+            logger.error(f"Simple HTTP request failed: {e}")
             return None 
