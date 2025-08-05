@@ -1,0 +1,24 @@
+# FastAPI and web framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# AI - Google Gemini
+google-generativeai==0.3.2
+
+# Web scraping and browser automation
+playwright==1.40.0
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# HTTP and networking
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Data processing and validation
+pydantic==2.5.0
+python-dotenv==1.0.0
+
+# Utilities
+asyncio==3.4.3
+typing-extensions==4.8.0 
