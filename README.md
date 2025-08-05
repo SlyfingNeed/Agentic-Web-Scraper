@@ -1,6 +1,6 @@
-# AI-Powered Web Scraper API
+# Agentic Web Scraper API
 
-An intelligent web scraping API that uses AI to understand natural language queries and extract structured data from websites. Built with FastAPI, Google Gemini, Playwright, and BeautifulSoup.
+An Agentic AI method for web scraping that uses LLM to understand natural language queries and extract structured data from websites. Built with FastAPI, Google Gemini, Playwright, and BeautifulSoup.
 
 ## Transparency Acknowledgement
 
