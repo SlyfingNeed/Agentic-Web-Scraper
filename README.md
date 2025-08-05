@@ -2,14 +2,18 @@
 
 An intelligent web scraping API that uses AI to understand natural language queries and extract structured data from websites. Built with FastAPI, Google Gemini, Playwright, and BeautifulSoup.
 
+## Transparency Acknowledgement
+
+This project was developed with the assistance of AI tools such as Cursor and ChatGPT for rapid prototyping. Final logic and structure were reviewed and modified by the developer
+
 ## Features
 
-- 🤖 **AI-Powered Query Interpretation**: Uses Google Gemini to understand what to scrape from natural language queries
-- 🌐 **JavaScript Rendering**: Uses Playwright to handle dynamic content and SPAs
-- 📊 **Structured Data Extraction**: Extracts articles, links, headlines, and metadata
-- 🔄 **Async Processing**: Built with async/await for better performance
-- 🛡️ **CORS Support**: Ready for frontend integration
-- 📝 **Production Ready**: Includes error handling, logging, and health checks
+- **AI-Powered Query Interpretation**: Uses Google Gemini to understand what to scrape from natural language queries
+- **JavaScript Rendering**: Uses Playwright to handle dynamic content and SPAs
+- **Structured Data Extraction**: Extracts articles, links, headlines, and metadata
+- **Async Processing**: Built with async/await for better performance
+- **CORS Support**: Ready for frontend integration
+- **Production Ready**: Includes error handling, logging, and health checks
 
 ## Quick Start
 
